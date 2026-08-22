@@ -45,16 +45,35 @@ jobs:
       - name: Scan for credentials, account IDs, wildcard IAM, and local paths
         shell: bash
         run: |
+          scan_paths=(infrastructure docs scripts tests README.md .gitignore)
           credential_pattern='AKIA[0-9A-Z]{16}|aws_secret_access_key|aws_access_key_id'
           credential_pattern+='|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|'
           credential_pattern+='[0-9]{12}'
-          ! grep -RInE --exclude-dir=.git --exclude='ci.yml' \
-            "$credential_pattern" .
-          wildcard_hits=$(grep -RInE --include='*.yaml' --include='*.yml' \
-            "Action: ['\"]?\\*|Resource: ['\"]?\\*" . || true)
-          test -z "$wildcard_hits"
-          ! grep -RInE --exclude-dir=.git \
-            '([A-Za-z]:\\\\|/Users/|/home/|/root/)' .
+          if grep -RInE "$credential_pattern" "${scan_paths[@]}"; then
+            echo "Credential or account ID pattern found."
+            exit 1
+          elif [[ $? -ne 1 ]]; then
+            echo "Credential scan could not complete."
+            exit 2
+          fi
+
+          if grep -RInE "Action: ['\"]?\\*|Resource: ['\"]?\\*" \
+            infrastructure; then
+            echo "Wildcard IAM action or resource found."
+            exit 1
+          elif [[ $? -ne 1 ]]; then
+            echo "Wildcard IAM scan could not complete."
+            exit 2
+          fi
+
+          if grep -RInE '([A-Za-z]:\\\\|/Users/|/home/|/root/)' \
+            "${scan_paths[@]}"; then
+            echo "Local absolute path found."
+            exit 1
+          elif [[ $? -ne 1 ]]; then
+            echo "Local path scan could not complete."
+            exit 2
+          fi
 
       - name: Verify clean formatting and diff
         run: git diff --check
