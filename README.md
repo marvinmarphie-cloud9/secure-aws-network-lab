@@ -44,6 +44,10 @@ The defaults verify stack `secure-aws-network-lab` with AWS CLI profile `secure-
 
 The script discovers physical resource IDs from CloudFormation, prints a PASS/FAIL summary, and exits with code `1` if any check fails. It does not create, update, or delete AWS resources.
 
+## Deployment Validation
+
+The successful August 22, 2026 deployment and live verification results are recorded in [docs/deployment-validation.md](docs/deployment-validation.md).
+
 ## Deployment warning
 
 This repository is intentionally not deployed by CI. Review the template, region, parameters, IAM implications, and expected costs before running CloudFormation yourself. The template creates AWS resources and requires suitable permissions in the target account.
