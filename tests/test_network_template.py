@@ -4,6 +4,7 @@ import yaml
 
 
 TEMPLATE_PATH = Path(__file__).parents[1] / "infrastructure" / "network.yaml"
+VERIFICATION_SCRIPT_PATH = Path(__file__).parents[1] / "scripts" / "verify-deployment.ps1"
 
 
 class CloudFormationLoader(yaml.SafeLoader):
@@ -83,3 +84,25 @@ def test_cloudwatch_flow_logs_omit_destination_options():
     assert properties["LogDestinationType"] == "cloud-watch-logs"
     assert "DestinationOptions" not in properties
     assert properties["LogFormat"]
+
+
+def test_verification_script_is_read_only_and_uses_expected_defaults():
+    script = VERIFICATION_SCRIPT_PATH.read_text(encoding="utf-8")
+
+    assert '"secure-aws-network-lab"' in script
+    assert '"secure-cloud-resume"' in script
+    assert '"eu-north-1"' in script
+    assert "list-stack-resources" in script
+    assert "describe-subnets" in script
+    assert "describe-route-tables" in script
+    assert "describe-vpc-endpoints" in script
+    assert "describe-flow-logs" in script
+    assert "describe-log-groups" in script
+    assert "describe-security-groups" in script
+    assert "exit 1" in script
+    assert '"--group-ids") + $securityGroupIds' in script
+    assert "ERROR: Stage" in script
+    assert "create-" not in script.lower()
+    assert "update-" not in script.lower()
+    assert "delete-" not in script.lower()
+    assert "put-" not in script.lower()

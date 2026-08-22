@@ -22,10 +22,27 @@ The template selects two Availability Zones dynamically and creates six subnets:
 
 ```text
 infrastructure/network.yaml     CloudFormation network foundation
+scripts/verify-deployment.ps1   Read-only post-deployment verification
 docs/architecture.md             Detailed traffic and security design
 tests/test_network_template.py   Offline architecture assertions
 .github/workflows/ci.yml         YAML, lint, test, and security validation
 ```
+
+## Post-deployment verification
+
+After deploying the stack manually, run the read-only Windows PowerShell verification script from the repository root:
+
+```powershell
+.\scripts\verify-deployment.ps1
+```
+
+The defaults verify stack `secure-aws-network-lab` with AWS CLI profile `secure-cloud-resume` in `eu-north-1`. Override them when needed:
+
+```powershell
+.\scripts\verify-deployment.ps1 -StackName my-stack -Profile my-profile -Region eu-west-1
+```
+
+The script discovers physical resource IDs from CloudFormation, prints a PASS/FAIL summary, and exits with code `1` if any check fails. It does not create, update, or delete AWS resources.
 
 ## Deployment warning
 
