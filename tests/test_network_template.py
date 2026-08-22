@@ -74,3 +74,12 @@ def test_flow_logs_use_default_encryption_and_are_retained_for_seven_days():
     statement = role_policy["Statement"][0]
     assert statement["Action"] == ["logs:CreateLogStream", "logs:PutLogEvents"]
     assert statement["Resource"][1] == {"Sub": "${FlowLogsLogGroup.Arn}:*"}
+
+
+def test_cloudwatch_flow_logs_omit_destination_options():
+    flow_log = template()["Resources"]["VpcFlowLog"]
+    properties = flow_log["Properties"]
+
+    assert properties["LogDestinationType"] == "cloud-watch-logs"
+    assert "DestinationOptions" not in properties
+    assert properties["LogFormat"]

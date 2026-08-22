@@ -461,12 +461,12 @@ Resources:
     Type: AWS::EC2::FlowLog
     Properties:
       DeliverLogsPermissionArn: !GetAtt FlowLogsRole.Arn
-      DestinationOptions:
-        FileFormat: plain-text
-        HiveCompatiblePartitions: false
-        PerHourPartition: false
       LogDestinationType: cloud-watch-logs
       LogGroupName: !Ref FlowLogsLogGroup
+      LogFormat: >-
+        ${version} ${account-id} ${interface-id} ${srcaddr} ${dstaddr}
+        ${srcport} ${dstport} ${protocol} ${packets} ${bytes} ${start}
+        ${end} ${action} ${log-status}
       MaxAggregationInterval: 60
       ResourceId: !Ref NetworkVpc
       ResourceType: VPC

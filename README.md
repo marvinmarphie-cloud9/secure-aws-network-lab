@@ -38,3 +38,7 @@ The VPC, subnets, route tables, security groups, Internet Gateway, and S3 Gatewa
 ## Cleanup
 
 If you deploy the stack manually, delete the CloudFormation stack after the lab. Confirm that the Flow Logs log group is removed according to your retention and deletion policy requirements, then verify in the AWS console or CLI that no lab resources remain. Do not delete shared resources outside this stack.
+
+## Troubleshooting
+
+An earlier deployment failed because `DestinationOptions` is not supported when an `AWS::EC2::FlowLog` uses `LogDestinationType: cloud-watch-logs`. The fix is to remove the entire `DestinationOptions` block while retaining the CloudWatch destination, log group, custom `LogFormat`, and other Flow Log properties. The template does not deploy this unsupported property.
