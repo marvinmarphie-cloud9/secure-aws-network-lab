@@ -1,0 +1,26 @@
+# Python test and tooling artifacts
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+.venv/
+venv/
+
+# CloudFormation and local tooling output
+.aws-sam/
+cdk.out/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# Local environment and editor files
+.env
+.env.*
+!.env.example
+.vscode/
+.idea/
+
+# OS files
+.DS_Store
+Thumbs.db

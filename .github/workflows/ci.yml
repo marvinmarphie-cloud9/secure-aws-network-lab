@@ -1,0 +1,60 @@
+---
+name: Validate Secure AWS Network Lab
+
+"on":
+  push:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install validation tools
+        run: |
+          python -m pip install --disable-pip-version-check \
+            cfn-lint yamllint pyyaml pytest
+
+      - name: Parse YAML files
+        run: |
+          python -c "import yaml; yaml.safe_load(open(
+            '.github/workflows/ci.yml'))"
+
+      - name: Check YAML formatting
+        run: |
+          yamllint --strict infrastructure/network.yaml \
+            .github/workflows/ci.yml
+
+      - name: Lint CloudFormation
+        run: |
+          cfn-lint infrastructure/network.yaml
+
+      - name: Run architecture tests
+        run: python -m pytest -q
+
+      - name: Scan for credentials, account IDs, wildcard IAM, and local paths
+        shell: bash
+        run: |
+          credential_pattern='AKIA[0-9A-Z]{16}|aws_secret_access_key|aws_access_key_id'
+          credential_pattern+='|BEGIN (RSA|OPENSSH|EC) PRIVATE KEY|'
+          credential_pattern+='[0-9]{12}'
+          ! grep -RInE --exclude-dir=.git --exclude='ci.yml' \
+            "$credential_pattern" .
+          wildcard_hits=$(grep -RInE --include='*.yaml' --include='*.yml' \
+            "Action: ['\"]?\\*|Resource: ['\"]?\\*" . || true)
+          test -z "$wildcard_hits"
+          ! grep -RInE --exclude-dir=.git \
+            '([A-Za-z]:\\\\|/Users/|/home/|/root/)' .
+
+      - name: Verify clean formatting and diff
+        run: git diff --check
